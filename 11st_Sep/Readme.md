@@ -8,3 +8,6 @@
         - 내용
     * 두 번째 파일 이름
         - 내용
+2. Hyeji Kim
+   * Lec2_Silver
+      - Markov Decision Process
