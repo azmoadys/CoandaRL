@@ -11,3 +11,5 @@
 2. Hyeji Kim
    * Lec2_Silver
       - Markov Decision Process
+   * Lec3_Silver
+      - Planning by Dynamic Programming
