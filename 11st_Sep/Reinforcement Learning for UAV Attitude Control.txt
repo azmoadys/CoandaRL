@@ -1,0 +1,168 @@
+In this work, we investigate the performance and accuracy of the inner control loop providing attitude control when using intelligent flight control systems trained with the state-of-the art RL algorithms, Deep Deterministic Gradient Policy (DDGP), Trust Region Policy Optimization (TRPO) and Proximal Policy Optimization (PPO).
+To investigate these unknowns we ?rst developed an open-source high-?delity simulation environment to train a ?ight controller attitude control of a quadrotor through RL.
+First, accurate of?ine models are used to construct a baseline controller, while online learning provides ?ne tuning and real-time adaptation.
+
+attitude control ? i.e. the “inner loop”. 
+
+For instance, high precision and accuracy is necessary for proximity or indoor ?ight. But accuracy may be sacri?ced in larger outdoor spaces where adaptability is of the utmost importance due to the unpredictability of the environment. 
+
+ GYM FC is an OpenAI Environment [10] providing a common interface for researchers to develop intelligent ?ight control systems. The simulated environment consists of an Iris quadcopter digital replica or digital twin [11] with the intention of eventually be used to transfer the trained controller to physical hardware. 
+
+ Deep Deterministic Gradient Policy (DDGP), Trust Region Policy Optimization (TRPO), and Proximal Policy Optimization (PPO). We then compare the performance of our synthesized controllers with that of a PID controller. Our evaluation ?nds that controllers trained using PPO outperform PID control and are capable of exceptional performance. 
+
+
+2. BACKGROUND
+ 이 섹션에서는 이 작업을 이해하는데 필요한 쿼드콥터 비행 역학대해서 간단한 overview를 제공해 준다. 그리고 강화학습을 사용한 비행 컨트롤 시스템 개발에 대한 소개를 해준다.
+
+A. 쿼드콥터 비행 역학
+ 쿼드콥터는 six degrees of reedom(DOF)의 비행기이다. three rotational and three transitional 하다. (x,y,z,roll,pitch,yaw 인듯?)
+4개의 컨트롤 인풋으로 부터 (각각의 모터) 의 결과는 안정적인 비행을 제공하기 위해 필요한 온보드 컴퓨터에 들어간다
+ 각각의 wi에 영향을 미치는 공기 역학은 각 모터의 환경설정에 따라 다르다.
+가장 인기있는 환경설정은 Figure 1a에 묘사된 "X" 환경설정이다, 이것은 비행체의 앞부분으로 생각하는 곳에 상대적으로 모터를 X 형태로 단다.
+이것은 z축으로는 45도 밖에 회전을 못하는 제약이 있는 "+" 환경설정 보다 더 안정성을 준다
+이것은 축과 모터로 부터의 거리에 따라 생성되는 토크가 다르기 때문이다.
+
+쿼드콥터의 방향에 관한 attitude는 각 축에 대한 각속도로 표현될 수 있다.
+attitude control의 목적은 어떤 원하는 attitude 오메가* 에 대해서 원하는 모터 시그널을 계산하기 위해서이다.
+ autopilot system에서 attitude control은 inneer control loop에 의해서 실행되고 이것은 time-sensitive하다.
+한번 원하는 attitude가 얻어지면, X, Y, Z 축으로의 이동은 각각 의 모터에 부분적인 thrust를 적용함으로써 이룰 수 있다.
+ PID controller는 다음처럼 수학적으로 표현된 선형 피드백 controller이다.
+
+...
+
+ Kp, Ki, Kd는 설정가능한 상수고, u(t)는 컨트롤 시그널이다.
+각 텀에 대한 영향은 P 텀은 현재 에러로 고려되고, I 텀은 에러들의 히스토리고, D 텀은 미래의 에러를 추정한다.
+쿼드 콥터에서의 attitude control을 위해 roll, pitch, yaw 축에 대한 각각의 PID 컨트롤이 있다.
+이너 루프의 각각의 사이클에서 각각의 PID sum이 계산되어서 이것이 각각의 모터로 힘을 얼마나 전달할 값을 가지고 있다, 이 프로세스는 mixing 이라고 불린다.
+Mixing은 각 팔로부터 얻어지는 토크에 기반
+
+Mixing은 어떻게 각각의 팔의 길이로 부터 얻어지는 토크들에 기반하여 축 통제 시그널이 계산되어 지는지 결정하기 위한 기하학적 프레임을 묘사하는 상수를 저장한 표를 가지고 있다. (X와 +가 다름을 기억하라)
+각 모터 yi에 대한 컨트롤 신호는 대충 다음과 같다,
+
+(flight dynamics : 비행역학)
+(underactuated : 하단에서 작동하는)
+(upward thrust : 상승 추력)
+aerodynamic : 공기 역학의
+in respect to : ~에 관하여
+thrust : 추력
+
+B. Reinforcement Learning
+ 이 작업에서 우리는 뉴럴 네트워크 비행 통제를 다룬다, Iris quadcopter와 agent 상호작용을 하며, 이는 높은 충실도의 물리 시뮬레이터 환경인 Gazebo simulator에서 구현되었다.
+ 불연속적인 타임-스텝 t 마다 에이전트는 환경으로 부터 각 축에 대한 각속도 에러인 Xt 와 각 로터 wi 의 각속도를 받는다, 이는 각각 자이로 스코프와 electoric speed controller (ESC) 에서 받아온 것이다.
+이런 관찰은 연속적인 observation spaces에서 일어나고, 이는 각 모터에 전달되는 네 개의 컨트롤 신호들에 상응한다.
+에이전트는 이런 센서 데이터를 받기만 하기 때문에, 물리적 환경이나 비행 역학에 대해 모른다, 그러므로 엡실론은 에이전트에 의해 부분적으로 관찰되는 것이다.
+[15]에 의해서 동기부여를 받아서, 우리는 스테이트를 과거의 관찰과 액션의 시퀀스로 고려하였다. st = xi, ai, ..., at-1, xt.
+ 에이전트 사이의 상호작용과 엠실론은 공식적으로 MDP로 정의되었다. state transition은 현재 상태 s와 액션 a에 일때 s'로 갈 확률로 정의되었다,
+Pr{st+1 = s' | st=s, at=a}. 에이전트의 행동은 이것의 정책 파이에 의해서 정의되고, 특정 상태에서 어떤 행동을 해야만 하는지 매핑이 있어야 한다.
+에이전트의 목적은 최적의 정책을 개발하기 위해 시간 동안의 보상을 최대화 하는 것이다.
+우리는 독자들이 강화학습을 더 잘 이해할 수 있게 [16]을 참조하기를 환영한다.
+ 최근까지 연속적인 액션 스페이스를 컨트롤 하는 것은 RL에서 여러운 부분이라고 고려되어져 왔다.
+뉴럴 네트워크와 RL을 결합하면서 중요한 진척이 있었다. 이 작업에서는 우리는 DDGP[17]와 TRPO[18], 가 최근에 쿼드콥터 방향 제어에 사용되었기 떄문에 이를 사용하기로 하였다.
+DDPG는 DQN(Deep Q-Network)를 연속적인 액션 도메인에 대해 개선한 것을 제공한다. 이는 actor-critic architecture를 사용하는데 이는 actor-critic 각각을 위하 두개의 뉴럴 네트워크를 사용하는 것이다.
+이것은 model-free 알고리즘인데 이것은 처음에 모델을 생성하지 않고 정책을 학습할 수 있다는 것이다.
+TRPO는 natural gradient policy methods와 비슷하다. 그러나 이 메소드는 단조적인 증가를 보장한다.
+우리는 Proximal Policy Optimization(PPO) [19]라고 불리는 세번째 알고리즘을 우리 분석에 추가하였다. PPO는 도전적인 환경에서 다른 최신 메소드보다 성능이 좋다고 알려져 있다.
+PPO는 또한 policy gradient method이고, TRPO와 비슷하지만 구현하거나 튜닝하기 더 쉽다.
+
+3. RELATED WORK
+ 항공술은 비행 제어에 있어 1960년 부터의 깊은 역사를 가지고 있다. 이 기간동안 고정된 선형적 컨트롤러가 제공되어야 하는 초음속의 항공기가 개발되었다. 
+Gain scheduling은 개발되어서 다양한 환경설정의 선형적 컨트롤러들이 지정된 지역에서 가동될수 있도록 하였다.
+그러나 이것은 비선형 역학을 다루는데는 유연하지 않고, 충분하지 않았으며 적응된 컨트롤로의 포장된 길이었다.
+오랜 기간동안 많은 실험적 적응형 컨트롤러들이 테스트 되었지만 불안정 하였다.
+후의 발전은 model reference adaptive control (MRAC)로 안정성을 높혔다, 그리고 L1은 적응중 참조 모델을 제공하였다.
+작은 규모의 임베디드 컴퓨팅 플랫폼의 가격이 떨어짐에 따라, 지적 비행 컨트롤 옵션은 현실적인 옵션이 되었고, 지난 10년동안 활발한 연구 끝에 이제 적응하는것 만이 아니라 학습을 한다.
+ UAV를 향한 성능 요구치가 계속해서 높아짐에 따라 우리는 비행 제어의 역사가 스스로 반복된다는 것을 보고있다.
+인기있는 고성능 드론 레이싱 펌웨어인 Betaflight는 쓰로틀과 전류 레벨에 gain scheduler를 추가하여 PID gain을 조정한다.
+환경이 변하면 그에 적응하여 PID gain이 동적으로 온라인으로 업데이트 되는 Intelligent PID flight control methods는 계속 제안되어 왔다. 
+그러나 이것은 PID고유의 단점을 가지고 있다, 이는 integral windup, 믹싱의 필요등이 있고, 가장 중요하게 이들은 피드백 컨트롤러라서 원천적으로 readctive하다.
+반명에 feedforward 컨트롤은 (or predictive control) proactive하다, 그리고 이는 컨트롤러가 에러가 일어나기 전에 컨트롤 신호를 보낼 수 있따.
+Feedforward control을 위해 시스템의 모델이 존재해야만 한다. Learning-based 지적 컨트롤은 인공 뉴럴 네트워크로 예측적인 컨트롤 모델을 만들기 위해서 계속 제안되어 왔다.
+ Dierks et. al. 의 주목할 만한 작업은 쿼드콥터 역학, 온라인, 특정한 길로의 학습을 배우는 뉴럴 네트워크로 만들어진 지적 비행 시스템을 제안한다. 
+매트랩 시뮬레이션은 이가 PID 컨트롤러를 능가했다고 입증하였고, 특히 경로 추적에 있어서 효과적이었다.
+그럼에도 불구하고 제안된 접근법은 속도를 추정하기 위해서 비행체의 질량이나 모멘트에 대한 사전 지식을 필요로 했다. 
+그러나 온라인 학습에서 마주하는 불확실성을 설명하기 위해 정확한 오프라인 모델을 만드는것은 필수적이었다.
+오프라인 모델들을 만들기 위해, 사전 작업이 사용되었다. 지적인 비행 제어 시스템을 훈련시키기 위해 지도 학습이 사용되었다, 
+이런 접근법의 제한은 트레닝 데이터가 기반하는 역학을 정확하게 반영하지는 않는다는 것이다.
+일반적으로, 지도학습은 이것 자체로 컨트롤 같은 사호작용하는 문제를 풀기 위해서 최적의 조건은 아니다.
+ 강화학습은 이것의 정책이 시간이 지나서 환경과 상호작용 한다는 점에서 적응형 컨트롤과 비슷한 목적을 가지고 있다.
+쿼드콥터 컨트롤에서의 강화학습의 첫번째 사용은 Waslander et. al.에 의해서 발표되었다. (고도 제어)
+이 저자는 최적의 제어 정책을 탐색하기 위해 모델 기반의 강화학습 알고리즘을 작성하였다.
+ 컨트롤러는 정확한 추적과 damping에 대해서 보상을 받았다. 이들의 디자인은 다른 선형 시스템과 비교했을때 stabilization에서 중요한 발전을 이루었다.
+최근에 Hwangbo e. al은 강화학습을 쿼드콥터의 네비게이션 제어에 사용해오고 있다.
+이들은 학습 기간에서 TRPO와 DDPG를 능가하는 새로운 결정론적 on-policy 학습 알고리즘을 만들었다.
+더욱이 작가들은 이들의 결과를 현실 세계에 검증하였다, 이들의 시뮬레이션된 모델을 현실 쿼드콥터에 가져왔다.
+경로 추적은 정확하다고 드러났다. 주목할만하게, 이 저자는 현실세계로 전환하면서 주요한 차이점을 발견했다.
+Reality gap으로 알려진 것으로, 이는 시뮬레이션에서 리얼리즘을 더하는 추가적인 설정을 많이 하지 않으면 현실세계로 가져오는 것이 힘들다는 것이다.
+ 대부분의 주요한 이전 작업들은 네비게이션과  가이드의 정확도에 초점을 두고 있다. 
+뉴럴 네트워크 기반의 지적 자세 제어 비행 컨트롤 시스템의 정확도와 정밀도를 검증하기 위한 데이터가 부족하며,
+RL을 사용해 트레이닝하는데 사용된 우리 지식에 대한 검증 데이터는 아에 없다.
+더욱이 이 작업은 수학적 모델과 대조되는 물리적 시뮬레이션을 사용하였고, 환경은 앞에서 말한 현실성을 증가시키는 사전 작업을 사용하였다.
+이 작업의 목적은 RL을 사용한 트레이닝 자세 컨트롤 플랫폼을 제공하는 것이다.
+
+Fig. 2: Environment architecture의 오버뷰, GYM FC. 대시보드에 파란색 블록은 이 작업을 위해 구현된 부분들이다.
+
+ 분명히 말하자면, 디지털 트윈 레이어는 (i) 시뮬레이트된 월드에 의해서 정해지고, (ii) 이것의 커뮤니케이션 레이어와의 인터페이스에 의해서 정해진다.
+시뮬레이트된 월드는 UAV 자세 제어를 염두해 두고 특별히 만들어졌다. 우리가 만든 기술은 가이드나 지도 없이 자세 제어가 되도록 하였다.
+이것은 비행체의 질량의 중심을 월드의 ball joint로 옮기고, 이것이 어느 방향으로든 자유롭게 회전하도록 함으로써 가능했다. 이것은 현실세계에서 짐벌락이나 기구의 마찰력 때문에 얻는것이 불가능하지 않기 때문에 실용적이지 않ㅇ았다.
+이 작업으로, 환경에서 컨트롤된 비행체는 Irir 쿼드콥터로 1.5 Kg의 질량과 550 mm의 motor-to-motor 거리를 가지고 있다.
+환경 안에서의 쿼드콥터에 대한 묘사는 Figure 3에 나와 있다. Gazebo를 트레이닝 하는 동안 시뮬레이션 스피드를 높히기 위해 headless 모드로 실행됬음에 주목해라.
+그러나 이 구조는 디지털 구조가 만들어 질 수 있는 한 어떠한 멀티 콥터에서도 사용될 수 있다.
+헬리콥터나 멀티콥터는 우리의 setup의 좋은 후보였다, 왜냐하면 이들은 세 축을 따 완전한 범위의 회전을 할 수 있기 때문이다.
+이것은 고정된 날개의 비행체에는 전형적으로 맞지 않았다. 그러나 우리의 디자인은 고정된 날개 시뮬레이팅에 맞게 확장되었다, 비행 제어를 위한 컨트롤 surfaces의 공기흐름을 시뮬레이팅 함으로써.
+Gazebo는 이미 공기흐름 시뮬레이션을 위한 툴들의 집합을 통합해 두었다.
+
+Interface. 디지털 트윈 레이어는 커뮤니케이션 레이어를 위해 두개의 명령 인터페이스들을 제공한다. 시뮬레이션 리셋과, 모터 업데이트 이다.
+시뮬레이션 리셋 명령들은 Gazebo의 API를 통해서 제공된다. 그리고 이들은 우리의 구현 범위가 아니었다.
+모터 업데이트는 UDP 서버에 의해서 제공되었다. 우리는 이들 인터페이스를 개발하기 위한 접극법을 토론했다.
+ 
+Fig. 3: Gazebo의 Iris 쿼드콥터는 땅으로 부터 1미터 떨어져 있다. 몸체는 월드의 ball joint와 질량의 중심이 어디서 연결되어 있는지 보기 위해서 투명하다.
+화살표는 모델에 사용된 다양한 조인트들을 보여준다.
+
+ 시뮬레이션된 월드와 디지털 트윈의 컨트롤러 사이의 싱크로를 유지하기 위해, 시뮬레이션이 진행되어야 하는 pace는 직접적으로 강화되었다.
+이는 시뮬레이터를 step-by-step으로 컨트롤 함으로써 가능하다. 우리의 첫번째 접근법에서, Gazebo's Google Protobuf API가 사용되었다. (싱글 시뮬레이션 스텝을 진행시키기 위핸 특정한 메시지와 함께)
+상태 메시지를 구독함으로써 (현재 시뮬레이션 스텝을 포함하고 있음) 스텝이 언제 끝났는지 결정할 수 있고 그리고 이것은 싱크로를 보장해 주었다. 그러나 광고하는 스텝 메시지의 비율을 증가시키는 시도를 함으로써, 상테 메시지의 비율이 최대 5 Hz가 된 것을 발견했다.
+이런 제한은 시뮬레이션/학습 파이프라인에서 지속적인 병목현상을 야기했다.
+더욱이 Gezebo가 이것이 프로세스할 수 없는 메시지를 조용히 드랍시키는 것이 발견됬다.
+ 중요한 변형들을 집합은 실험 throughput을 높히도록 만들어 졌다.
+중요한 아이디어는 모터가 시뮬레이션 클락을 직접 움직일 수 있게 허용해 주는 것이다.
+디폴트로써 Gazebo는 UDP 서버로 부터 모터 업데이트를 받기 위해 미리 설치된 ArduPilot Arducopter 플러그인을 가지고 있다
+이런 모터 업데이트는 pulse width modulation(PWM) 신호로 온다. 동시에 비행기 보드 안의 inertial measurement unit (IMU) 신호가 두번째 UDP 채널로 전달된다.
+Arducopter는 오픈소스 멀티콥터 펌웨어로, 이것의 플러그인은 support software in the loop(SITL)로 발전되었다.
+ 우리는 우리의 비행기 플러그인을 Arducopter plugin으로 부터 끌어내었다. 
+모터 커맨드를 받으면서, 모터 힘은 일반적으로 업데이트 되고, 시뮬레이션 스텝은 실행된다. 센서 데이터는 읽어져서 같은 UDP 채널의 클라이언트에게 응답으로써 반송된다.
+IMU 센서 데이터로 함에 더해서, 우리는 Electronice Speed Controller (ESC) 를 동시에 사용하였다.
+ESC는 각 로터의 각속도를 제공해주었다, 이것은 역시 클라이언트에게 교체된다.
+이러한 접근법으로 우리 비행체 플러그인을 구현하는것은 성공적으로 Google Protobuf API의 제약을 이기게 해주었고, 스텝 쓰루풋을 200 이상 올려주었다.
+
+
+
+
+
+inertial : 관성
+apparatus : 기구, 장치
+hereby : 이로써
+is capped at ~: 최대 ~이다.
+developed to : ~로 발전되다.
+work around : 해결하다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
