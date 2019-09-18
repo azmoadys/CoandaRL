@@ -13,6 +13,9 @@
       - Markov Decision Process
    * Lec3_Silver
       - Planning by Dynamic Programming
+   * Reinforcement Learning.pdf
+      - Lec1.instruction (David Silver)
+      - 모두를 위한 RL
       
 3. Heewon Kim
    * Reinforcement Learning for UAV Attitude Control.txt
