@@ -20,3 +20,7 @@
 3. Heewon Kim
    * Reinforcement Learning for UAV Attitude Control.txt
       - Reinforcement Learning for UAV Attitude Control
+
+4. Yeeun Jo
+   * RL_LECTURE1_20190920_study.txt
+     - [David Silver] Lecture 1. (~about Reinforcement Learning)
