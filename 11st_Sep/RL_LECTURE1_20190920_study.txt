@@ -1,32 +1,33 @@
-³¯Â¥: 2019.09.19 ¸ñ
+ë‚ ì§œ: 2019.09.19 ëª©
 
-#ÀÚ·á
+#ìžë£Œ
 RL Coure by David Silver 
 Lecture 1: Introduction to Reinforcement Learning
 https://www.youtube.com/watch?v=2pWv7GOvuf0
 
-#¼ö¾÷³»¿ë
-1´Ü¿ø ¸ñÂ÷
-2. Reinforcement LearningÀÌ ¹«¾ùÀÎÁö
-3. ¾î¶°ÇÑ ¹®Á¦µéÀÌ ÀÖ°í ¸Ó½Å·¯´×ÀÌ ÀÌ¸¦ ¾î¶»°Ô ÇØ°áÇÏ´ÂÁö
-4. Reinforcement ¹®Á¦¸¦ À§ÇØ Agent¸¦ ¸¸µå´Â °ÍÀÇ ÀÇ¹Ì 
+#ìˆ˜ì—…ë‚´ìš©
+1ë‹¨ì› ëª©ì°¨
+2. Reinforcement Learningì´ ë¬´ì—‡ì¸ì§€
+3. ì–´ë– í•œ ë¬¸ì œë“¤ì´ ìžˆê³  ë¨¸ì‹ ëŸ¬ë‹ì´ ì´ë¥¼ ì–´ë–»ê²Œ í•´ê²°í•˜ëŠ”ì§€
+4. Reinforcement ë¬¸ì œë¥¼ ìœ„í•´ Agentë¥¼ ë§Œë“œëŠ” ê²ƒì˜ ì˜ë¯¸ 
 
 (6:10)
-°­È­ÇÐ½ÀÀº °úÇÐÀÇ ¿©·¯ ºÐ¾ßµéÀÇ ±³ÁýÇÕÀÌ´Ù. 
-°°Àº ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇØ  ÇÊ¿äÇÑ °Í.
-°áÁ¤ÀÇ ÃÖÀûÈ­¸¦ ¸ñÇ¥ÇÔ.
+ê°•í™”í•™ìŠµì€ ê³¼í•™ì˜ ì—¬ëŸ¬ ë¶„ì•¼ë“¤ì˜ êµì§‘í•©ì´ë‹¤. 
+ê°™ì€ ë¬¸ì œë¥¼ í•´ê²°í•˜ê¸° ìœ„í•´  í•„ìš”í•œ ê²ƒ.
+ê²°ì •ì˜ ìµœì í™”ë¥¼ ëª©í‘œí•¨.
 
 "Reinforcement Learning"
 
 NeuroScience, Reward System 
 
-RLÀÇ Æ¯Â¡
-1. supervisor°¡ ¾ø´Ù. reward ½ÅÈ£¸¸ ÀÖ´Ù. -10 3 points µîÀ» ¸Å±ä´Ù.
-2. ¿©·¯ ´Ü°è·Î ÀÎÇØ¼­ delay°¡ ¹ß»ýÇÏ°í ³ªÁß¿¡¼­¾ß ÇÇµå¹éÀ» ¹Þ´Â´Ù. 
-3. ½Ã°£ÀÌ Áß¿äÇÏ´Ù. ¿¬¼ÓÀûÀÎ decision making. optimize rewards. 
-¿ªµ¿ÀûÀÎ ½Ã½ºÅÛÀÌ ÀÖ°í agent°¡ µ¿ÀÛÇÑ´Ù. 
-4. È¯°æÀÌ Áö¼ÓÀûÀ¸·Î º¯ÇÑ´Ù. agentÀÇ active learning effect.
+RLì˜ íŠ¹ì§•
+1. supervisorê°€ ì—†ë‹¤. reward ì‹ í˜¸ë§Œ ìžˆë‹¤. -10 3 points ë“±ì„ ë§¤ê¸´ë‹¤.
+2. ì—¬ëŸ¬ ë‹¨ê³„ë¡œ ì¸í•´ì„œ delayê°€ ë°œìƒí•˜ê³  ë‚˜ì¤‘ì—ì„œì•¼ í”¼ë“œë°±ì„ ë°›ëŠ”ë‹¤. 
+3. ì‹œê°„ì´ ì¤‘ìš”í•˜ë‹¤. ì—°ì†ì ì¸ decision making. optimize rewards. 
+ì—­ë™ì ì¸ ì‹œìŠ¤í…œì´ ìžˆê³  agentê°€ ë™ìž‘í•œë‹¤. 
+4. í™˜ê²½ì´ ì§€ì†ì ìœ¼ë¡œ ë³€í•œë‹¤. agentì˜ active learning effect.
 'optimize sequence decisions' 
 
 ~(12:30)
+
 
